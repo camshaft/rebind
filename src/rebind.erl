@@ -23,11 +23,10 @@ do_transform(match_expr, {match,Line,LH,RH}, Context, Acc) ->
 do_transform(block_expr, {block,Line,Body}, Context, Acc) ->
   {Body2, _} = transform_children(Body, Acc, Context),
   {{block,Line,Body2}, false, Acc};
-do_transform(clause, {clause,Pattern,Guards,Body}, Context, Acc) ->
+do_transform(clause, {clause,Line,Pattern,Guards,Body}, Context, Acc) ->
   {Pattern2, Acc2} = transform_children(Pattern, Acc, Context),
-  {Guards2, _} = transform_children(Guards, Acc2, Context),
   {Body2, _} = transform_children(Body, Acc2, Context),
-  {{clause,Pattern2,Guards2,Body2}, false, Acc};
+  {{clause,Line,Pattern2,Guards,Body2}, false, Acc};
 do_transform(function, {function,Line,Name,Arity,Clauses}, Context, Acc) ->
   Clauses2 = [begin
     {Out, _} = transform_children(Clause, #{}, Context),
@@ -48,9 +47,17 @@ rebind(Name, Line, Acc) when is_map(Acc) ->
 rebind(Name, Line, Count) when is_integer(Count) ->
   {var, Line, list_to_atom("_" ++ atom_to_list(Name) ++ "__REBIND__" ++ integer_to_list(Count))}.
 
-transform_children(Children, Acc, Context) when is_list(Children) ->
+transform_children(Children, Acc, Context) ->
+  case catch do_transform_children(Children, Acc, Context) of
+    {'EXIT', Error} ->
+      Error;
+    {Children2, Acc2} ->
+      {Children2, Acc2}
+  end.
+
+do_transform_children(Children, Acc, Context) when is_list(Children) ->
   {Children2, Acc2} = parse_trans:do_transform(fun do_transform/4, Acc, Children, Context),
   {parse_trans:revert(Children2), Acc2};
-transform_children(Child, Acc, Context) ->
-  {[Child2], Acc2} = transform_children([Child], Acc, Context),
+do_transform_children(Child, Acc, Context) ->
+  {[Child2], Acc2} = do_transform_children([Child], Acc, Context),
   {Child2, Acc2}.
