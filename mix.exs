@@ -19,7 +19,7 @@ defmodule Rebind.Mixfile do
   end
 
   defp package do
-    [files: ["lib", "mix.exs", "README*"],
+    [files: ["src", "mix.exs", "README*"],
      contributors: ["Cameron Bytheway"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/camshaft/rebind"}]
