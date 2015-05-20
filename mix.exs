@@ -3,7 +3,7 @@ defmodule Rebind.Mixfile do
 
   def project do
     [app: :rebind,
-     version: "0.1.1",
+     version: "0.1.3",
      elixir: "~> 1.0",
      description: "rebind parse transform for erlang",
      package: package,
